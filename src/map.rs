@@ -88,8 +88,7 @@ fn add_corners(map: &mut Vec<i32>) {
                 }
             }
             if map[y * MAP_COL + x] == 23
-                && (((map[y * MAP_COL + x - 1] == 16) || (map[y * MAP_COL + x - 1] == 41))
-                    && map[(y + 1) * MAP_COL + x] == 16)
+                && ((map[y * MAP_COL + x - 1] == 16) && (map[(y + 1) * MAP_COL + x] == 16))
             {
                 map[y * MAP_COL + x] = 39;
                 if map[(y * MAP_COL + x + 1)] == 16 {
@@ -114,10 +113,10 @@ fn add_edges(map: &mut Vec<i32>) {
             if (map[y * MAP_COL + x] == 23) && map[y * MAP_COL + x + 1] == 16 {
                 map[y * MAP_COL + x] = 24;
             }
-            if (map[y * MAP_COL + x] == 23) && map[(y-1) * MAP_COL + x] == 16 {
+            if (map[y * MAP_COL + x] == 23) && map[(y - 1) * MAP_COL + x] == 16 {
                 map[y * MAP_COL + x] = 6;
             }
-            if (map[y * MAP_COL + x] == 23) && map[(y+1) * MAP_COL + x] == 16 {
+            if (map[y * MAP_COL + x] == 23) && map[(y + 1) * MAP_COL + x] == 16 {
                 map[y * MAP_COL + x] = 40;
             }
         }
