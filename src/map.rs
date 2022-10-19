@@ -63,14 +63,13 @@ fn count_neighbors(map: &mut Vec<i32>, x: i32, y: i32, tileindex: i32) -> i32 {
 }
 
 fn add_corners(map: &mut Vec<i32>) {
-    
     tl_corners(map);
     tr_corners(map);
     br_corners(map);
     bl_corners(map);
-    tl_corners(map);    
+    tl_corners(map);
     fix_single_width_tiles(map);
-    
+
     /* for y in 1..(MAP_ROW - 1) {
         for x in 1..(MAP_COL - 1) {
             /* if map[y * MAP_COL + x] == 23
@@ -191,7 +190,6 @@ fn br_corners(map: &mut Vec<i32>) {
                 if map[(y * MAP_COL + x - 1)] == 16 {
                     map[(y * MAP_COL + x - 1)] = 23;
                     println!("Generating Tile via BR at {}, {}", x, y);
-
                 }
             }
         }
@@ -207,9 +205,20 @@ fn fix_single_width_tiles(map: &mut Vec<i32>) {
             {
                 map[(y + 1) * MAP_COL + x] = 23;
                 println!("Generating Tile via FSWT at {}, {}", x, y);
-                println!("{}, {} was {}", x, y-1, map[(y - 1) + MAP_COL + x],);
-                println!("{}, {} was {}", x, y+1, map[(y + 1) + MAP_COL + x],);
+                println!("{}, {} was {}", x, y - 1, map[(y - 1) + MAP_COL + x],);
+                println!("{}, {} was {}", x, y + 1, map[(y + 1) + MAP_COL + x],);
             }
+        }
+    }
+}
+
+fn inner_corers(map: &mut Vec<i32>) {
+    for y in 1..(MAP_ROW - 1) {
+        for x in 1..(MAP_COL - 1) {
+            if (map[y * MAP_COL + x] == 23){
+
+            }
+
         }
     }
 }
