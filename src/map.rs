@@ -1,5 +1,26 @@
 use crate::*;
 
+pub struct Map{
+    pub length: usize,
+    pub height: usize,
+    pub tiles: Vec<TileType>,
+
+}
+
+impl Map{
+    pub fn new(length: usize, height: usize) -> Self {
+        Self {length, height,
+            tiles:vec![TileType::Water; length * height],
+        }
+    }
+}
+
+
+
+pub fn map_idx(x: usize, y:usize) -> usize {
+    (y * MAP_COL) + x
+}
+
 pub fn generate_map() -> Vec<i32> {
     //let columns = winsize.w as i32 / (SPRITE_WIDTH as i32 * SPRITE_SCALE as i32);
     //let rows = winsize.h as i32 / (SPRITE_WIDTH as i32 * SPRITE_SCALE as i32);
@@ -31,7 +52,7 @@ pub fn seed_land(map: &mut [i32]) {
         }
     }
 }
-
+ 
 fn smooth_land(map: &mut Vec<i32>) {
     let mut smoothed_map = map.clone();
     for y in 1..(MAP_ROW - 1) {
@@ -106,25 +127,6 @@ fn add_corners(map: &mut Vec<i32>) {
             }*/
         }
     } */
-}
-
-fn add_edges(map: &mut Vec<i32>) {
-    for y in 1..(MAP_ROW - 1) {
-        for x in 1..(MAP_COL - 1) {
-            if (map[y * MAP_COL + x] == 23) && map[y * MAP_COL + x - 1] == 16 {
-                map[y * MAP_COL + x] = 22;
-            }
-            if (map[y * MAP_COL + x] == 23) && map[y * MAP_COL + x + 1] == 16 {
-                map[y * MAP_COL + x] = 24;
-            }
-            if (map[y * MAP_COL + x] == 23) && map[(y - 1) * MAP_COL + x] == 16 {
-                map[y * MAP_COL + x] = 6;
-            }
-            if (map[y * MAP_COL + x] == 23) && map[(y + 1) * MAP_COL + x] == 16 {
-                map[y * MAP_COL + x] = 40;
-            }
-        }
-    }
 }
 
 fn tl_corners(map: &mut Vec<i32>) {
@@ -212,13 +214,38 @@ fn fix_single_width_tiles(map: &mut Vec<i32>) {
     }
 }
 
-fn inner_corers(map: &mut Vec<i32>) {
+fn add_edges(map: &mut Vec<i32>) {
     for y in 1..(MAP_ROW - 1) {
         for x in 1..(MAP_COL - 1) {
-            if (map[y * MAP_COL + x] == 23){
-
+            if (map[y * MAP_COL + x] == 23) && map[y * MAP_COL + x - 1] == 16 {
+                map[y * MAP_COL + x] = 22;
             }
+            if (map[y * MAP_COL + x] == 23) && map[y * MAP_COL + x + 1] == 16 {
+                map[y * MAP_COL + x] = 24;
+            }
+            if (map[y * MAP_COL + x] == 23) && map[(y - 1) * MAP_COL + x] == 16 {
+                map[y * MAP_COL + x] = 6;
+            }
+            if (map[y * MAP_COL + x] == 23) && map[(y + 1) * MAP_COL + x] == 16 {
+                map[y * MAP_COL + x] = 40;
+            }
+        }
+    }
+}
 
+fn inner_corners(map: &mut Vec<i32>) {
+    for y in 1..(MAP_ROW - 1) {
+        for x in 1..(MAP_COL - 1) {
+            if (map[y * MAP_COL + x] == 23)
+                && (map[y * MAP_COL + x - 1] == 22)
+                && (map[(y - 1) * MAP_COL + x] == 6)
+            {
+                map[y * MAP_COL + x] = 26;
+            } else if (map[y * MAP_COL + x] == 23)
+                && (map[y * MAP_COL + x - 1] == 22)
+                && (map[(y - 1) * MAP_COL + x] == 6)
+            {
+            }
         }
     }
 }
