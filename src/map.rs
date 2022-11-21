@@ -1,16 +1,16 @@
-use crate::*;
+use crate::{*, tile::Tile};
 
 pub struct Map{
     pub length: usize,
     pub height: usize,
-    pub tiles: Vec<TileType>,
+    pub tiles: Vec<Tile>,
 
 }
 
 impl Map{
     pub fn new(length: usize, height: usize) -> Self {
         Self {length, height,
-            tiles:vec![TileType::Water; length * height],
+            tiles:vec![Tile::Water; length * height],
         }
     }
 }
