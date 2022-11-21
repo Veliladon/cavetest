@@ -1,8 +1,10 @@
 mod map;
+mod tile;
 
 use bevy::{prelude::*, render::texture::ImageSettings};
 use bevy_inspector_egui::WorldInspectorPlugin;
 use rand::{thread_rng, Rng};
+
 
 const BACKGROUND_SHEET: &str = "tilesheet.png";
 const SPRITE_WIDTH: f32 = 64.;
