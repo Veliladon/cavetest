@@ -1,5 +1,11 @@
 use crate::{*, tile::Tile};
 
+pub struct Chunk{
+    pub x: usize,
+    pub y: usize,
+    pub map: Map,
+}
+
 pub struct Map{
     pub length: usize,
     pub height: usize,
@@ -21,7 +27,7 @@ pub fn map_idx(x: usize, y:usize) -> usize {
     (y * MAP_COL) + x
 }
 
-pub fn generate_map() -> Vec<i32> {
+pub fn generate_map() -> Vec<usize> {
     //let columns = winsize.w as i32 / (SPRITE_WIDTH as i32 * SPRITE_SCALE as i32);
     //let rows = winsize.h as i32 / (SPRITE_WIDTH as i32 * SPRITE_SCALE as i32);
     // let mut map: Vec::new(<TileData>);
@@ -38,7 +44,7 @@ pub fn generate_map() -> Vec<i32> {
     map
 }
 
-pub fn seed_land(map: &mut [i32]) {
+pub fn seed_land(map: &mut [usize]) {
     let mut rng = thread_rng();
     for y in 0..MAP_ROW {
         for x in 0..MAP_COL {
@@ -53,11 +59,11 @@ pub fn seed_land(map: &mut [i32]) {
     }
 }
  
-fn smooth_land(map: &mut Vec<i32>) {
+fn smooth_land(map: &mut Vec<usize>) {
     let mut smoothed_map = map.clone();
     for y in 1..(MAP_ROW - 1) {
         for x in 1..(MAP_COL - 1) {
-            let water_count = count_neighbors(map, x as i32, y as i32, 16);
+            let water_count = count_neighbors(map, x, y, 16);
             //println!("Land Count for {}, {}: {}", x, y, land_count);
             if water_count > 4 {
                 smoothed_map[y * MAP_COL + x] = 16;
@@ -69,12 +75,12 @@ fn smooth_land(map: &mut Vec<i32>) {
     *map = smoothed_map;
 }
 
-fn count_neighbors(map: &mut Vec<i32>, x: i32, y: i32, tileindex: i32) -> i32 {
+fn count_neighbors(map: &mut Vec<usize>, x: usize, y: usize, tileindex: usize) -> i32 {
     let mut neighbors = 0;
     let columns = MAP_COL as i32;
     for iy in -1..=1 {
         for ix in -1..=1 {
-            if !(ix == 0 && iy == 0) && map[(((y + iy) * columns + x + ix) as usize)] == tileindex {
+            if !(ix == 0 && iy == 0) && map[(((y as i32 + iy) * columns + x as i32 + ix) as usize)] == tileindex {
                 neighbors += 1;
             }
         }
@@ -83,7 +89,7 @@ fn count_neighbors(map: &mut Vec<i32>, x: i32, y: i32, tileindex: i32) -> i32 {
     neighbors
 }
 
-fn add_corners(map: &mut Vec<i32>) {
+fn add_corners(map: &mut Vec<usize>) {
     tl_corners(map);
     tr_corners(map);
     br_corners(map);
@@ -129,7 +135,7 @@ fn add_corners(map: &mut Vec<i32>) {
     } */
 }
 
-fn tl_corners(map: &mut Vec<i32>) {
+fn tl_corners(map: &mut Vec<usize>) {
     for y in 1..(MAP_ROW - 1) {
         for x in 1..(MAP_COL - 1) {
             if (map[y * MAP_COL + x] == 23)
@@ -148,9 +154,9 @@ fn tl_corners(map: &mut Vec<i32>) {
     }
 }
 
-fn tr_corners(map: &mut Vec<i32>) {
-    for y in 1..(MAP_ROW - 1) {
-        for x in 1..(MAP_COL - 1) {
+fn tr_corners(map: &mut Vec<usize>) {
+    for x in 1..(MAP_COL - 1) {
+        for y in 1..(MAP_ROW - 1) {
             if (map[y * MAP_COL + x] == 23)
                 && (map[y * MAP_COL + x + 1] == 16)
                 && (map[(y - 1) * MAP_COL + x] == 16)
@@ -164,7 +170,7 @@ fn tr_corners(map: &mut Vec<i32>) {
     }
 }
 
-fn bl_corners(map: &mut Vec<i32>) {
+fn bl_corners(map: &mut Vec<usize>) {
     for y in (1..(MAP_ROW - 1)).rev() {
         for x in 1..(MAP_COL - 1) {
             if (map[y * MAP_COL + x] == 23)
@@ -181,7 +187,7 @@ fn bl_corners(map: &mut Vec<i32>) {
     }
 }
 
-fn br_corners(map: &mut Vec<i32>) {
+fn br_corners(map: &mut Vec<usize>) {
     for y in (1..(MAP_ROW - 1)).rev() {
         for x in (1..(MAP_COL - 1)).rev() {
             if (map[y * MAP_COL + x] == 23)
@@ -198,7 +204,7 @@ fn br_corners(map: &mut Vec<i32>) {
     }
 }
 
-fn fix_single_width_tiles(map: &mut Vec<i32>) {
+fn fix_single_width_tiles(map: &mut Vec<usize>) {
     for y in 1..(MAP_ROW - 1) {
         for x in 1..(MAP_COL - 1) {
             if (map[y * MAP_COL + x] == 23)
@@ -214,7 +220,7 @@ fn fix_single_width_tiles(map: &mut Vec<i32>) {
     }
 }
 
-fn add_edges(map: &mut Vec<i32>) {
+fn add_edges(map: &mut Vec<usize>) {
     for y in 1..(MAP_ROW - 1) {
         for x in 1..(MAP_COL - 1) {
             if (map[y * MAP_COL + x] == 23) && map[y * MAP_COL + x - 1] == 16 {
@@ -233,7 +239,7 @@ fn add_edges(map: &mut Vec<i32>) {
     }
 }
 
-fn inner_corners(map: &mut Vec<i32>) {
+fn inner_corners(map: &mut Vec<usize>) {
     for y in 1..(MAP_ROW - 1) {
         for x in 1..(MAP_COL - 1) {
             if (map[y * MAP_COL + x] == 23)

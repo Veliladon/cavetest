@@ -1,9 +1,10 @@
 mod map;
 mod tile;
 
-use bevy::{prelude::*, render::texture::ImageSettings};
-use bevy_inspector_egui::WorldInspectorPlugin;
+use bevy::{prelude::*, window::PrimaryWindow};
 use rand::{thread_rng, Rng};
+
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 
 const BACKGROUND_SHEET: &str = "tilesheet.png";
@@ -31,6 +32,7 @@ pub struct TileProb{
 
 
 
+#[derive(Resource)]
 struct GameAssets{
     background: Handle<TextureAtlas>,
 }
@@ -39,13 +41,11 @@ struct GameAssets{
 fn main() {
     App::new()
     .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.5)))
-    .insert_resource(Msaa { samples: 1 })
-    .insert_resource(ImageSettings::default_nearest())
-    .add_plugins(DefaultPlugins)
-    .add_plugin(WorldInspectorPlugin::new())
-    .add_startup_system(setup_system)
-    .add_startup_system_to_stage(StartupStage::PostStartup, draw_background)
-    .add_startup_system_to_stage(StartupStage::PostStartup, set_camera)
+    .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+    .add_plugin(WorldInspectorPlugin::default())
+    .add_startup_system(setup_system.in_base_set(StartupSet::Startup))
+    .add_startup_system(draw_background.in_base_set(StartupSet::PostStartup))
+    .add_startup_system(set_camera.in_base_set(StartupSet::PostStartup))
 
     .run();
     
@@ -55,10 +55,10 @@ fn setup_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    mut windows: ResMut<Windows>,
+    // mut windows: ResMut<Windows>,
    
 ){
-    commands.spawn_bundle(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default());
     
     //let window = windows.get_primary_mut().unwrap();
     //let win_size = (window.width(), window.height());
@@ -66,19 +66,19 @@ fn setup_system(
     //let win_size = WinSize {w: win_w, h: win_h};
     //commands.insert_resource(win_size);
 
-    let window = windows.get_primary_mut().unwrap();
-    let (win_w, win_h) = (window.width(), window.height());
+    //let window = windows.get_primary_mut().unwrap();
+    //let (win_w, win_h) = (window.width(), window.height());
 
 
     // position window
     // window.set_position(IVec2::new(2780, 4900));
 
     // add win_size resource
-    let win_size = WinSize {w: win_w, h: win_h };
-    commands.insert_resource(win_size);
+    //let win_size = WinSize {w: win_w, h: win_h };
+    //commands.insert_resource(win_size);
 
     let texture_handle = asset_server.load(BACKGROUND_SHEET);
-    let texture_atlas = TextureAtlas::from_grid_with_padding(texture_handle, Vec2::new(SPRITE_WIDTH, SPRITE_WIDTH), 17, 12, Vec2::new(0.,0.), Vec2::new(0., 0.));
+    let texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(SPRITE_WIDTH, SPRITE_WIDTH), 17, 12, None, None);
     let background = texture_atlases.add(texture_atlas);
     let game_assets = GameAssets {
         background,
@@ -119,23 +119,30 @@ fn set_camera(
 fn draw_background(
     mut commands: Commands,
     game_assets: Res<GameAssets>,
-    winsize: Res<WinSize>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    // winsize: Res<WinSize>,
 ){
     //let mut tiles = Vec::new();
     
     let map_background = vec![203; MAP_ROW * MAP_COL];
     let map = map::generate_map();
+    let mut map_entities = Vec::new();
 
+    let window = window_query.get_single().unwrap();
 
     println!("Drawing Background");
-    let columns = winsize.w as i32 / (SPRITE_WIDTH as i32 * SPRITE_SCALE as i32);
-    let rows = winsize.h as i32 / (SPRITE_WIDTH as i32 * SPRITE_SCALE as i32);
-    println!("Window Size: {}", winsize.w);
+    let columns = window.width() as i32 / (SPRITE_WIDTH as i32 * SPRITE_SCALE as i32);
+    let rows = window.height() as i32 / (SPRITE_WIDTH as i32 * SPRITE_SCALE as i32);
+    println!("Window Size: {}", window.width());
     println!("Detected {} columns", columns);
     println!("Detected {} rows", rows);
+    
+    
+
+    
     for y in 0..MAP_ROW{
         for x in 0..MAP_COL {
-            commands.spawn_bundle(SpriteSheetBundle {
+            let tile = commands.spawn(SpriteSheetBundle {
                 texture_atlas: game_assets.background.clone(),
                 transform: Transform {
                     translation: Vec3::new(x as f32 * SPRITE_WIDTH * SPRITE_SCALE, -(y as f32 * SPRITE_WIDTH * SPRITE_SCALE), 1.),
@@ -145,7 +152,8 @@ fn draw_background(
                 sprite: TextureAtlasSprite::new(map_background[y * MAP_COL + x].try_into().unwrap()),
                 ..Default::default()
                 
-            });
+            }).id();
+            map_entities.push(tile);
             //tiles.push(tile);
             //println!("Added sprite");
                 
@@ -157,7 +165,7 @@ fn draw_background(
     
     for y in 0..MAP_ROW{
         for x in 0..MAP_COL {
-            commands.spawn_bundle(SpriteSheetBundle {
+            commands.spawn(SpriteSheetBundle {
                 texture_atlas: game_assets.background.clone(),
                 transform: Transform {
                     translation: Vec3::new(x as f32 * SPRITE_WIDTH * SPRITE_SCALE, -(y as f32 * SPRITE_WIDTH * SPRITE_SCALE), 2.),
